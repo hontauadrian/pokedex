@@ -19,9 +19,14 @@ func startRepl(cfg *config) {
 			continue
 		}
 		commandName := words[0]
+		args := []string{}
+		if len(words) > 1 {
+			args = words[1:]
+		}
+
 		val, ok := getCommands()[commandName]
 		if ok {
-			err := val.callback(cfg)
+			err := val.callback(cfg, args...)
 			if err != nil {
 				fmt.Print(err)
 			}
@@ -40,7 +45,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -67,6 +72,21 @@ func getCommands() map[string]cliCommand {
 				"instead of displaying the next 20 locations, it displays the previous 20 locations.",
 			callback: commandMapb,
 		},
+		"explore": {
+			name:        "explore <location_name>",
+			description: "Show a list of all the Pokémon located the entered area",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch <pokemon_name>",
+			description: "Catching Pokemon adds them to the user's Pokedex.",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect <pokemon_name>",
+			description: " It takes the name of a Pokemon and prints the name, height, weight, stats and type(s) of the Pokemon",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -74,4 +94,5 @@ type config struct {
 	pokeapiClient    pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
+	pokedex          map[string]pokeapi.Pokemon
 }
